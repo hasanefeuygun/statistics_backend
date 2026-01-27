@@ -9,9 +9,8 @@ import { Server, Socket } from 'socket.io';
 import 'dotenv/config';
 import { AppService } from 'src/app.service';
 
-interface PingPayload {
-  msg: string;
-}
+import { PingDto } from './dto/ping.dto';
+import { PongDto } from './dto/pong.dto';
 
 @WebSocketGateway({
   cors: {
@@ -41,11 +40,12 @@ export class EventsGateway {
   }
 
   @SubscribeMessage('client:ping')
-  onPing(@MessageBody() body: PingPayload, @ConnectedSocket() client: Socket) {
-    client.emit('server:pong', {
-      recieved: body,
+  onPing(@MessageBody() body: PingDto, @ConnectedSocket() client: Socket) {
+    const payload: PongDto = {
+      received: body,
       number: this.appService.getNumbers(),
       at: Date.now(),
-    });
+    };
+    client.emit('server:pong', payload);
   }
 }
