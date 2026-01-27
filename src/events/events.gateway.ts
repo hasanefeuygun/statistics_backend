@@ -7,6 +7,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import 'dotenv/config';
+import { AppService } from 'src/app.service';
 
 interface PingPayload {
   msg: string;
@@ -14,12 +15,14 @@ interface PingPayload {
 
 @WebSocketGateway({
   cors: {
-    origin: true, // Ui url
+    origin: `http://localhost:${process.env.FRONTEND_PORT}`, // Ui url
     credentials: true,
   },
-  namespace: '/realtime', // For Example: client needs to connect http://localhost:3000/realtime
+  namespace: '/testsocket', // For Example: client needs to connect http://localhost:3000/testsocket
 })
 export class EventsGateway {
+  constructor(private readonly appService: AppService) {}
+
   // İt's similar to controller but this is for socket events
   @WebSocketServer()
   server: Server;
@@ -39,6 +42,10 @@ export class EventsGateway {
 
   @SubscribeMessage('client:ping')
   onPing(@MessageBody() body: PingPayload, @ConnectedSocket() client: Socket) {
-    client.emit('server:pong', { recieved: body, at: Date.now() });
+    client.emit('server:pong', {
+      recieved: body,
+      number: this.appService.getNumbers(),
+      at: Date.now(),
+    });
   }
 }
