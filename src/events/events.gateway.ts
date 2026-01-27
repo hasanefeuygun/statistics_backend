@@ -14,7 +14,7 @@ interface PingPayload {
 
 @WebSocketGateway({
   cors: {
-    origin: [`http://localhost:${process.env.FRONTEND_PORT}`], // Ui url
+    origin: true, // Ui url
     credentials: true,
   },
   namespace: '/realtime', // For Example: client needs to connect http://localhost:3000/realtime
@@ -23,6 +23,10 @@ export class EventsGateway {
   // İt's similar to controller but this is for socket events
   @WebSocketServer()
   server: Server;
+
+  afterInit() {
+    console.log('Gateway initialized');
+  }
 
   handleConnection(client: Socket) {
     console.log('connected:', client.id);
