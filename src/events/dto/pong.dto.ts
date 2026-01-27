@@ -6,8 +6,10 @@ export class PongDto {
   @ValidateNested()
   @Type(() => PingDto)
   received: PingDto;
+
   @IsNumber()
   number: number;
+
   @IsNumber()
   at: number;
 }

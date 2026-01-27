@@ -1,51 +1,20 @@
-import {
-  WebSocketGateway,
-  WebSocketServer,
-  SubscribeMessage,
-  MessageBody,
-  ConnectedSocket,
-} from '@nestjs/websockets';
-import { Server, Socket } from 'socket.io';
+import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import { Server } from 'socket.io';
 import 'dotenv/config';
-import { AppService } from 'src/app.service';
-
-import { PingDto } from './dto/ping.dto';
-import { PongDto } from './dto/pong.dto';
+import { OnEvent } from '@nestjs/event-emitter';
 
 @WebSocketGateway({
   cors: {
-    origin: `http://localhost:${process.env.FRONTEND_PORT}`, // Ui url
-    credentials: true,
+    origin: `http://localhost:${process.env.FRONTEND_PORT}`, // Allow this channel
   },
-  namespace: '/testsocket', // For Example: client needs to connect http://localhost:3000/testsocket
 })
 export class EventsGateway {
-  constructor(private readonly appService: AppService) {}
-
-  // İt's similar to controller but this is for socket events
+  // It's similar to controller but this is for socket events
   @WebSocketServer()
   server: Server;
 
-  afterInit() {
-    console.log('Gateway initialized');
-  }
-
-  handleConnection(client: Socket) {
-    console.log('connected:', client.id);
-    client.emit('server:hello', { msg: 'connected' });
-  }
-
-  handleDisconnect(client: Socket) {
-    console.log('disconnected:', client.id);
-  }
-
-  @SubscribeMessage('client:ping')
-  onPing(@MessageBody() body: PingDto, @ConnectedSocket() client: Socket) {
-    const payload: PongDto = {
-      received: body,
-      number: this.appService.getNumbers(),
-      at: Date.now(),
-    };
-    client.emit('server:pong', payload);
+  @OnEvent('numbers.tick')
+  handleNumbersTick(payload: { value: number; at: number }) {
+    this.server.emit('server:stats', payload);
   }
 }
