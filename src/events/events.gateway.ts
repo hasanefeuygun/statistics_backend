@@ -26,7 +26,7 @@ export class EventsGateway {
     this.numbersService.startForClient();
 
     client.emit('server:subscribed', {
-      ok: true,
+      isSubscribed: true,
       subscriberCount: this.numbersService.getSubscriberCount(),
     });
   }
@@ -36,7 +36,7 @@ export class EventsGateway {
     this.numbersService.stopForClient();
 
     client.emit('server:unsubscribed', {
-      ok: false,
+      isSubscribed: false,
       subsciberCount: this.numbersService.getSubscriberCount(),
     });
   }

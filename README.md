@@ -1,98 +1,84 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Statistics UI
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Event-driven NestJs Backend based on Websocket(via Socket.io Library)for Statistics Project
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+‼️**This backend must run together with Statistics Frontend(NextJs).Repo name -> statistics_ui.**
 
-## Description
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
+## 📦 Installation
 
 ```bash
-$ npm install
+npm install
 ```
 
-## Compile and run the project
+---
 
-```bash
-# development
-$ npm run start
+## 🔐 Environment Variables (Required)
 
-# watch mode
-$ npm run start:dev
+Create a `.env` file in the backend root directory.  
+ Use `.env.example` as a reference.
 
-# production mode
-$ npm run start:prod
+```env
+PORT=3000
+FRONT_END_PORT=2000
 ```
 
-## Run tests
+### Variables
 
-```bash
-# unit tests
-$ npm run test
+- **PORT**  
+  Backend server port.  
+  You may choose any available port.
 
-# e2e tests
-$ npm run test:e2e
+- **FRONT_END_PORT**  
+  Frontend port used for WebSocket CORS configuration in Events Gateway.  
+  Must match the port where the frontend is running.
 
-# test coverage
-$ npm run test:cov
-```
+> For sample values, please check the `.env.example` file.
 
-## Deployment
+⚠️ Make sure FRONT_END_PORT matches the frontend port defined in NEXT_PUBLIC_API_URL.
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+## 🔁 Real-Time Event Pipeline
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+A backend service generates a random number between **1 and 10** at a fixed **5-second interval**.
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
+### ⚙ Number Generation Service
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+- Produces a random number between 1 and 10 every 5 seconds.
+- After each generation, publishes the event:`numbers.tick`
 
-## Resources
+### 🎛 Subscription Control
 
-Check out a few resources that may come in handy when working with NestJS:
+- The service does **not** generate data by default.
+- Data flow is controlled via `subscribe` and `unsubscribe` events coming from the client.
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+- When the client emits **subscribe**:
+  - The service starts generating numbers.
+  - Each generated number triggers `numbers.tick`.
 
-## Support
+- When the client emits **unsubscribe**:
+  - Number generation stops.
+  - No further events are produced.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+### 📡 Event Gateway
 
-## Stay in touch
+- Listens to the `numbers.tick` event.
+- Receives the generated number from the service.
+- Forwards the value to connected clients using WebSocket with the event:`server:stats`
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+### 🌐 Frontend
 
-## License
+- Listens to the `server:stats` event.
+- Continuously receives real-time statistics from the backend.
+- Updates the UI accordingly.
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+### ✅ Result
+
+- Fully event-driven data pipeline.
+- Backend and frontend are loosely coupled.
+- Real-time stream is efficient and scalable.
+
+## 🛠 Tech Stack
+
+- NestJS
+- TypeScript
+- Socket.io
+- Event-based Architecture (Gateway + Services)
