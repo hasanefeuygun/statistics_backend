@@ -3,12 +3,13 @@ import {
   WebSocketServer,
   SubscribeMessage,
   ConnectedSocket,
+  WsException,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import 'dotenv/config';
 import { OnEvent } from '@nestjs/event-emitter';
-import { NumbersService } from 'src/numbers/numbers.service';
-import { Logger } from '@nestjs/common';
+import { NumbersService } from '../numbers/numbers.service';
+import { HttpStatus, Logger } from '@nestjs/common';
 
 const frontendPort = process.env.FRONTEND_PORT;
 
