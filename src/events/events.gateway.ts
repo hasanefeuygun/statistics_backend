@@ -10,9 +10,11 @@ import { OnEvent } from '@nestjs/event-emitter';
 import { NumbersService } from 'src/numbers/numbers.service';
 import { Logger } from '@nestjs/common';
 
+const frontendPort = process.env.FRONTEND_PORT;
+
 @WebSocketGateway({
   cors: {
-    origin: `http://localhost:${process.env.FRONTEND_PORT}`, // Allow this channel
+    origin: `http://localhost:${frontendPort}`, // Allow this channel
   },
 })
 export class EventsGateway {
@@ -30,14 +32,18 @@ export class EventsGateway {
 
   handleDisconnect(client: Socket) {
     this.numbersService.stopForClient();
-    this.logger.log(`Client ${client.id} disconnected and data flow stopped!`);
+    this.logger.log(
+      `Client ${client.id} disconnected and data flow stopped!Subscriber count:${this.numbersService.getSubscriberCount()}`,
+    );
   }
 
   @SubscribeMessage('subscribe')
   handleSubscribe(@ConnectedSocket() client: Socket) {
     this.numbersService.startForClient();
 
-    this.logger.log(`Data flow started for client ${client.id}`);
+    this.logger.log(
+      `Data flow started for client ${client.id}.Subscriber count:${this.numbersService.getSubscriberCount()}`,
+    );
 
     client.emit('server:subscribed', {
       isSubscribed: true,
