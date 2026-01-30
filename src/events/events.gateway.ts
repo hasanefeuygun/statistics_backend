@@ -8,6 +8,7 @@ import { Server, Socket } from 'socket.io';
 import 'dotenv/config';
 import { OnEvent } from '@nestjs/event-emitter';
 import { NumbersService } from 'src/numbers/numbers.service';
+import { Logger } from '@nestjs/common';
 
 @WebSocketGateway({
   cors: {
@@ -19,11 +20,24 @@ export class EventsGateway {
   @WebSocketServer()
   server: Server;
 
+  private logger: Logger = new Logger('EventsGateway');
+
   constructor(private readonly numbersService: NumbersService) {}
+
+  handleConnection(client: Socket) {
+    this.logger.log(`Client ${client.id} connected`);
+  }
+
+  handleDisconnect(client: Socket) {
+    this.numbersService.stopForClient();
+    this.logger.log(`Client ${client.id} disconnected and data flow stopped!`);
+  }
 
   @SubscribeMessage('subscribe')
   handleSubscribe(@ConnectedSocket() client: Socket) {
     this.numbersService.startForClient();
+
+    this.logger.log(`Data flow started for client ${client.id}`);
 
     client.emit('server:subscribed', {
       isSubscribed: true,
@@ -34,6 +48,8 @@ export class EventsGateway {
   @SubscribeMessage('unsubscribe')
   handleUnSubscribe(@ConnectedSocket() client: Socket) {
     this.numbersService.stopForClient();
+
+    this.logger.log(`Data flow stopped by emitting for client ${client.id}`);
 
     client.emit('server:unsubscribed', {
       isSubscribed: false,

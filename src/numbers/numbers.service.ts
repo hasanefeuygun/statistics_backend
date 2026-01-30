@@ -19,7 +19,7 @@ export class NumbersService {
         value,
         at: Date.now(),
       });
-    }, 5000); // Send random number every 5 second (heartbeat for homepage features)
+    }, 5000);
   }
 
   stopForClient() {
