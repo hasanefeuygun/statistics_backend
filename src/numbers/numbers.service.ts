@@ -6,6 +6,8 @@ export class NumbersService {
   private statsInterval: NodeJS.Timeout | null = null;
   private subscriberCount = 0;
 
+  private STATS_INTERVAL_MS = 5000;
+
   constructor(private eventEmitter: EventEmitter2) {}
 
   startForClient() {
@@ -19,7 +21,7 @@ export class NumbersService {
         value,
         at: Date.now(),
       });
-    }, 5000);
+    }, this.STATS_INTERVAL_MS);
   }
 
   stopForClient() {

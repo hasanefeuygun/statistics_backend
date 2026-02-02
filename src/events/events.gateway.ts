@@ -3,19 +3,25 @@ import {
   WebSocketServer,
   SubscribeMessage,
   ConnectedSocket,
-  WsException,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import 'dotenv/config';
 import { OnEvent } from '@nestjs/event-emitter';
 import { NumbersService } from '../numbers/numbers.service';
-import { HttpStatus, Logger } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
+
+import { Events } from 'src/constants/events';
 
 const frontendPort = process.env.FRONTEND_PORT;
 
+const url =
+  process.env.NODE_ENV === 'development'
+    ? `http://localhost:${frontendPort}`
+    : `http://statistics${frontendPort}`;
+
 @WebSocketGateway({
   cors: {
-    origin: `http://localhost:${frontendPort}`, // Allow this channel
+    origin: url, // Allow this channel
   },
 })
 export class EventsGateway {
@@ -27,15 +33,21 @@ export class EventsGateway {
 
   constructor(private readonly numbersService: NumbersService) {}
 
-  handleConnection(client: Socket) {
-    this.logger.log(`Client ${client.id} connected`);
+  afterInit() {
+    this.logger.log(`Eventgate initilaized and cors origin is: ${url}`);
   }
 
-  handleDisconnect(client: Socket) {
+  handleConnection(@ConnectedSocket() client: Socket) {
+    this.logger.log(`Client ${client.id} connected`);
+    client.emit('server:connection', { connectionStatus: 'connected' });
+  }
+
+  handleDisconnect(@ConnectedSocket() client: Socket) {
     this.numbersService.stopForClient();
     this.logger.log(
       `Client ${client.id} disconnected and data flow stopped!Subscriber count:${this.numbersService.getSubscriberCount()}`,
     );
+    client.emit(Events.SERVER_CONNECTION, { connectionStatus: 'disconnected' });
   }
 
   @SubscribeMessage('subscribe')
@@ -46,7 +58,7 @@ export class EventsGateway {
       `Data flow started for client ${client.id}.Subscriber count:${this.numbersService.getSubscriberCount()}`,
     );
 
-    client.emit('server:subscribed', {
+    client.emit(Events.SERVER_SUBSCRIPTION, {
       isSubscribed: true,
       subscriberCount: this.numbersService.getSubscriberCount(),
     });
@@ -56,9 +68,11 @@ export class EventsGateway {
   handleUnSubscribe(@ConnectedSocket() client: Socket) {
     this.numbersService.stopForClient();
 
-    this.logger.log(`Data flow stopped by emitting for client ${client.id}`);
+    this.logger.log(
+      `Data flow stopped by emitting for client ${client.id}.Subscriber count:${this.numbersService.getSubscriberCount()} `,
+    );
 
-    client.emit('server:unsubscribed', {
+    client.emit(Events.SERVER_SUBSCRIPTION, {
       isSubscribed: false,
       subsciberCount: this.numbersService.getSubscriberCount(),
     });
@@ -66,6 +80,6 @@ export class EventsGateway {
 
   @OnEvent('numbers.tick') // Listening numbers.tick event from numbers.service
   handleNumbersTick(payload: { value: number; at: number }) {
-    this.server.emit('server:stats', payload);
+    this.server.emit(Events.SERVER_STATS, payload);
   }
 }
