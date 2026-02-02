@@ -17,7 +17,7 @@ const frontendPort = process.env.FRONTEND_PORT;
 const url =
   process.env.NODE_ENV === 'development'
     ? `http://localhost:${frontendPort}`
-    : `http://statistics${frontendPort}`;
+    : `http://statistics.com`;
 
 @WebSocketGateway({
   cors: {
