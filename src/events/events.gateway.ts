@@ -34,12 +34,11 @@ export class EventsGateway {
   constructor(private readonly numbersService: NumbersService) {}
 
   afterInit() {
-    this.logger.log(`Eventgate initilaized and cors origin is: ${url}`);
+    this.logger.log(`Gateway initilaized and cors origin is: ${url}`);
   }
 
   handleConnection(@ConnectedSocket() client: Socket) {
     this.logger.log(`Client ${client.id} connected`);
-    client.emit('server:connection', { connectionStatus: 'connected' });
   }
 
   handleDisconnect(@ConnectedSocket() client: Socket) {
@@ -47,7 +46,6 @@ export class EventsGateway {
     this.logger.log(
       `Client ${client.id} disconnected and data flow stopped!Subscriber count:${this.numbersService.getSubscriberCount()}`,
     );
-    client.emit(Events.SERVER_CONNECTION, { connectionStatus: 'disconnected' });
   }
 
   @SubscribeMessage('subscribe')
