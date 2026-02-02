@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
-export class NumbersService {
+export class NumbersService implements OnModuleDestroy {
   private statsInterval: NodeJS.Timeout | null = null;
   private subscriberCount = 0;
 
@@ -37,5 +37,17 @@ export class NumbersService {
 
   getSubscriberCount() {
     return this.subscriberCount;
+  }
+
+  private clearStatsInterval() {
+    if (this.statsInterval) {
+      clearInterval(this.statsInterval);
+      this.statsInterval = null;
+    }
+  }
+
+  onModuleDestroy() {
+    this.clearStatsInterval();
+    this.subscriberCount = 0;
   }
 }
