@@ -8,9 +8,11 @@ import { Server, Socket } from 'socket.io';
 import 'dotenv/config';
 import { OnEvent } from '@nestjs/event-emitter';
 import { NumbersService } from '../numbers/numbers.service';
-import { Logger } from '@nestjs/common';
+import { Logger, UseFilters } from '@nestjs/common';
 
-import { Events } from 'src/constants/events';
+import { Events } from '../constants/events';
+
+import { WsExceptionsFilter } from '../ws-exception-filter';
 
 const frontendPort = process.env.FRONTEND_PORT;
 
@@ -48,6 +50,7 @@ export class EventsGateway {
     );
   }
 
+  @UseFilters(WsExceptionsFilter)
   @SubscribeMessage('subscribe')
   handleSubscribe(@ConnectedSocket() client: Socket) {
     this.numbersService.startForClient();
@@ -62,6 +65,7 @@ export class EventsGateway {
     });
   }
 
+  @UseFilters(WsExceptionsFilter)
   @SubscribeMessage('unsubscribe')
   handleUnSubscribe(@ConnectedSocket() client: Socket) {
     this.numbersService.stopForClient();
@@ -72,7 +76,7 @@ export class EventsGateway {
 
     client.emit(Events.SERVER_SUBSCRIPTION, {
       isSubscribed: false,
-      subsciberCount: this.numbersService.getSubscriberCount(),
+      subscriberCount: this.numbersService.getSubscriberCount(),
     });
   }
 
