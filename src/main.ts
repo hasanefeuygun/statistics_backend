@@ -1,8 +1,12 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { Logger } from '@nestjs/common';
+
 import 'dotenv/config';
 const port = process.env.PORT as string;
 const frontendPort = process.env.FRONTEND_PORT;
+
+const logger = new Logger();
 
 async function bootstrap() {
   if (!port || !frontendPort)
@@ -14,4 +18,7 @@ async function bootstrap() {
     console.log(`Server running on port ${port}`);
   });
 }
-void bootstrap();
+void bootstrap().catch((err) => {
+  logger.error('Bootstrap failed', err);
+  process.exit(1);
+});
