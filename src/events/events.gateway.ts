@@ -13,17 +13,13 @@ import { Logger, UseFilters } from '@nestjs/common';
 import { Events } from '../constants/events';
 
 import { WsExceptionsFilter } from '../ws-exception-filter';
+import { determineUrl, EnvShape } from 'src/config/cors.policy';
 
-const frontendPort = process.env.FRONTEND_PORT;
-
-const url =
-  process.env.NODE_ENV === 'development'
-    ? `http://localhost:${frontendPort}`
-    : `http://statistics.com`;
+const url = determineUrl(process.env as EnvShape);
 
 @WebSocketGateway({
   cors: {
-    origin: url, // Allow this channel
+    origin: url,
   },
 })
 export class EventsGateway {
